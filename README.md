@@ -10,6 +10,34 @@ Local MVP for evaluating NVIDIA GLiNER-PII predictions against manually annotate
 
 This is intentionally local-first. Docker, AWS, S3, DynamoDB, and production deployment are future scope.
 
+## MVP Architecture
+
+```text
+User
+  -> Next.js frontend
+  -> FastAPI backend
+  -> PyMuPDF PDF text extraction
+  -> GLiNER-PII prediction
+  -> Nitro taxonomy mapping
+  -> Ground truth CSV comparison
+  -> SQLite evaluation record
+  -> Next.js results view
+```
+
+The frontend is responsible for selecting a PDF, selecting a ground-truth CSV, choosing a model threshold, and displaying evaluation output.
+
+The backend owns the evaluation pipeline. It extracts text from the PDF, runs GLiNER predictions, maps model labels into Nitro's PII taxonomy, loads the manually annotated CSV, computes metrics, and stores the run locally.
+
+## Project Flow
+
+1. Start the FastAPI service.
+2. Start the Next.js app.
+3. Upload one source PDF and one ground-truth CSV.
+4. The API extracts PDF text and runs the PII detector.
+5. Predictions are normalized into Nitro taxonomy labels.
+6. Predictions are compared with the CSV annotations.
+7. Precision, recall, F1, TP, FP, and FN results are returned to the UI.
+
 ## Expected Ground Truth CSV
 
 The evaluator accepts flexible column names, but the simplest format is:
@@ -66,4 +94,3 @@ http://localhost:3000
 The backend will use the configured GLiNER model when the `gliner` package and model path are available. If the model cannot be loaded, the service falls back to a small regex-based development detector for emails, phone numbers, and SSN-like values so the UI and evaluation flow can still be tested.
 
 Evaluation is currently exact normalized `text + label` matching. That keeps the MVP transparent and easy to inspect before adding span overlap, page-aware matching, or fuzzy matching.
-
