@@ -66,6 +66,16 @@ The CSV is validated before the dataset is recorded. At minimum, the file must c
 - one supported text column such as `text` or `entity_text`
 - one supported label column such as `label` or `entity_type`
 
+## PDF Extraction
+
+PDF text is extracted page by page with PyMuPDF. Each extracted page is linked to:
+
+- the source file name
+- the page number
+- the extracted page text
+
+The extraction service also keeps a combined document text view so the GLiNER pipeline can reuse the page-level output without needing a second extraction pass.
+
 ## Expected Ground Truth CSV
 
 The evaluator accepts flexible column names, but the simplest format is:
