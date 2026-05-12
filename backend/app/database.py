@@ -12,6 +12,23 @@ def init_db(sqlite_path: Path) -> None:
     with sqlite3.connect(sqlite_path) as conn:
         conn.execute(
             """
+            CREATE TABLE IF NOT EXISTS datasets (
+                id TEXT PRIMARY KEY,
+                created_at TEXT NOT NULL,
+                name TEXT NOT NULL,
+                pdf_filenames_json TEXT NOT NULL,
+                pdf_count INTEGER NOT NULL,
+                ground_truth_filename TEXT NOT NULL,
+                csv_text_column TEXT NOT NULL,
+                csv_label_column TEXT NOT NULL,
+                storage_path TEXT NOT NULL,
+                status TEXT NOT NULL,
+                error TEXT
+            )
+            """
+        )
+        conn.execute(
+            """
             CREATE TABLE IF NOT EXISTS evaluations (
                 id TEXT PRIMARY KEY,
                 created_at TEXT NOT NULL,
@@ -26,6 +43,76 @@ def init_db(sqlite_path: Path) -> None:
             )
             """
         )
+
+
+def insert_dataset(
+    sqlite_path: Path,
+    dataset_id: str,
+    *,
+    name: str,
+    pdf_filenames: list[str],
+    ground_truth_filename: str,
+    csv_text_column: str,
+    csv_label_column: str,
+    storage_path: str,
+) -> None:
+    with sqlite3.connect(sqlite_path) as conn:
+        conn.execute(
+            """
+            INSERT INTO datasets (
+                id,
+                created_at,
+                name,
+                pdf_filenames_json,
+                pdf_count,
+                ground_truth_filename,
+                csv_text_column,
+                csv_label_column,
+                storage_path,
+                status
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                dataset_id,
+                datetime.now(UTC).isoformat(),
+                name,
+                json.dumps(pdf_filenames),
+                len(pdf_filenames),
+                ground_truth_filename,
+                csv_text_column,
+                csv_label_column,
+                storage_path,
+                "uploaded",
+            ),
+        )
+
+
+def get_dataset(sqlite_path: Path, dataset_id: str) -> dict[str, Any] | None:
+    with sqlite3.connect(sqlite_path) as conn:
+        conn.row_factory = sqlite3.Row
+        row = conn.execute(
+            "SELECT * FROM datasets WHERE id = ?",
+            (dataset_id,),
+        ).fetchone()
+
+    return _dataset_row_to_record(row) if row else None
+
+
+def list_datasets(sqlite_path: Path, limit: int = 20) -> list[dict[str, Any]]:
+    with sqlite3.connect(sqlite_path) as conn:
+        conn.row_factory = sqlite3.Row
+        rows = conn.execute(
+            """
+            SELECT *
+            FROM datasets
+            ORDER BY created_at DESC
+            LIMIT ?
+            """,
+            (limit,),
+        ).fetchall()
+
+    return [_dataset_row_to_record(row) for row in rows]
 
 
 def insert_evaluation(
@@ -132,3 +219,18 @@ def _row_to_record(row: sqlite3.Row) -> dict[str, Any]:
         "error": row["error"],
     }
 
+
+def _dataset_row_to_record(row: sqlite3.Row) -> dict[str, Any]:
+    return {
+        "id": row["id"],
+        "created_at": row["created_at"],
+        "name": row["name"],
+        "pdf_filenames": json.loads(row["pdf_filenames_json"]),
+        "pdf_count": row["pdf_count"],
+        "ground_truth_filename": row["ground_truth_filename"],
+        "csv_text_column": row["csv_text_column"],
+        "csv_label_column": row["csv_label_column"],
+        "storage_path": row["storage_path"],
+        "status": row["status"],
+        "error": row["error"],
+    }

@@ -37,23 +37,21 @@ class EvaluationResult:
     matches: list[dict]
 
 
+@dataclass(frozen=True)
+class GroundTruthValidation:
+    text_column: str
+    label_column: str
+    row_count: int
+
+
 def load_ground_truth(csv_path: Path) -> list[GroundTruthEntity]:
     frame = pd.read_csv(csv_path)
-    normalized_columns = {column.lower().strip(): column for column in frame.columns}
-
-    text_column = _find_column(normalized_columns, TEXT_COLUMNS)
-    label_column = _find_column(normalized_columns, LABEL_COLUMNS)
-
-    if text_column is None or label_column is None:
-        raise ValueError(
-            "Ground truth CSV must include a text column and a label column. "
-            f"Found columns: {', '.join(frame.columns)}"
-        )
+    validation = validate_ground_truth_frame(frame)
 
     entities: list[GroundTruthEntity] = []
     for row in frame.to_dict(orient="records"):
-        text = str(row.get(text_column, "")).strip()
-        raw_label = str(row.get(label_column, "")).strip()
+        text = str(row.get(validation.text_column, "")).strip()
+        raw_label = str(row.get(validation.label_column, "")).strip()
 
         if not text or not raw_label:
             continue
@@ -69,6 +67,32 @@ def load_ground_truth(csv_path: Path) -> list[GroundTruthEntity]:
         )
 
     return entities
+
+
+def validate_ground_truth_csv(csv_path: Path) -> GroundTruthValidation:
+    frame = pd.read_csv(csv_path)
+    return validate_ground_truth_frame(frame)
+
+
+def validate_ground_truth_frame(frame: pd.DataFrame) -> GroundTruthValidation:
+    normalized_columns = {column.lower().strip(): column for column in frame.columns}
+
+    text_column = _find_column(normalized_columns, TEXT_COLUMNS)
+    label_column = _find_column(normalized_columns, LABEL_COLUMNS)
+
+    if text_column is None or label_column is None:
+        raise ValueError(
+            "Ground truth CSV must include a text column and a label column. "
+            f"Accepted text columns: {', '.join(TEXT_COLUMNS)}. "
+            f"Accepted label columns: {', '.join(LABEL_COLUMNS)}. "
+            f"Found columns: {', '.join(frame.columns)}"
+        )
+
+    return GroundTruthValidation(
+        text_column=text_column,
+        label_column=label_column,
+        row_count=len(frame.index),
+    )
 
 
 def compare_predictions(
@@ -207,4 +231,3 @@ def _optional_int(value: object) -> int | None:
     if value is None or pd.isna(value):
         return None
     return int(value)
-

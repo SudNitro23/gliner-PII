@@ -18,7 +18,20 @@ class EvaluationResponse(BaseModel):
     error: str | None = None
 
 
+class DatasetResponse(BaseModel):
+    id: str
+    created_at: str | None = None
+    name: str
+    pdf_filenames: list[str]
+    pdf_count: int
+    ground_truth_filename: str
+    csv_text_column: str
+    csv_label_column: str
+    storage_path: str
+    status: str
+    error: str | None = None
+
+
 class HealthResponse(BaseModel):
     status: str
     service: str
-

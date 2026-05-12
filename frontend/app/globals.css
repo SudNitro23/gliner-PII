@@ -108,7 +108,8 @@ h2 {
 }
 
 .upload-panel,
-.results-panel {
+.results-panel,
+.history-panel {
   background: var(--panel);
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -152,25 +153,88 @@ h2 {
   white-space: nowrap;
 }
 
+.file-input.tall {
+  min-height: 62px;
+}
+
 .file-input input {
   display: none;
 }
 
-.threshold-row {
-  align-items: center;
+.text-input,
+.hint-block,
+.detail-block {
   display: grid;
-  gap: 12px;
-  grid-template-columns: auto minmax(120px, 1fr) 48px;
+  gap: 8px;
 }
 
-.threshold-row span {
+.text-input span,
+.hint-block strong,
+.detail-block strong {
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.text-input input {
+  background: #f9fbfa;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  min-height: 46px;
+  padding: 0 12px;
+}
+
+.hint-block {
+  background: #f9fbfa;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.hint-block p,
+.detail-block p {
+  color: var(--muted);
+  font-size: 0.92rem;
+  line-height: 1.45;
+  margin: 0;
+}
+
+.selection-list,
+.plain-list {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+}
+
+.selection-list span,
+.plain-list li {
+  background: #f9fbfa;
+  border: 1px solid var(--line);
+  border-radius: 8px;
   color: var(--muted);
   font-size: 0.9rem;
-  font-weight: 700;
+  list-style: none;
+  padding: 10px 12px;
 }
 
-.threshold-row strong {
-  text-align: right;
+.history-panel {
+  display: grid;
+  gap: 16px;
+  margin-top: 22px;
+  padding: 18px;
+}
+
+.empty-history {
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.metric-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .primary-button {
@@ -218,12 +282,6 @@ h2 {
   gap: 18px;
 }
 
-.metric-grid {
-  display: grid;
-  gap: 10px;
-  grid-template-columns: repeat(6, minmax(90px, 1fr));
-}
-
 .metric {
   background: #f9fbfa;
   border: 1px solid var(--line);
@@ -242,7 +300,9 @@ h2 {
 }
 
 .metric strong {
-  font-size: 1.35rem;
+  font-size: 1rem;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
 }
 
 .table-wrap {
@@ -318,7 +378,6 @@ tr:last-child td {
   }
 
   .metric-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: 1fr;
   }
 }
-

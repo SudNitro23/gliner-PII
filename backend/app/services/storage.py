@@ -14,3 +14,9 @@ async def save_upload(upload: UploadFile, run_dir: Path) -> Path:
     target_path.write_bytes(content)
     return target_path
 
+
+async def save_uploads(uploads: list[UploadFile], target_dir: Path) -> list[Path]:
+    saved_paths: list[Path] = []
+    for upload in uploads:
+        saved_paths.append(await save_upload(upload, target_dir))
+    return saved_paths
